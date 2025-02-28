@@ -1,101 +1,80 @@
-name: Run Cypress Tests on Windows (Chrome)
+name: Run Cypress Tests
 
 on:
   push:
     branches:
       - main
   pull_request:
-    branches:
-      - main
 
 jobs:
   test:
     runs-on: windows-latest
 
     steps:
-      # Step 1: Checkout Cypress Tests
+      - name: Set up job
+        run: echo "Starting CI pipeline..."
+
       - name: Checkout Cypress Tests
         uses: actions/checkout@v3
 
-      # Step 2: Install Node.js 22 (Fix EBADENGINE Errors)
       - name: Install Node.js 22
         uses: actions/setup-node@v3
         with:
-          node-version: 22  # Fixes engine compatibility issues
+          node-version: '22'
 
-      # Step 3: Verify Node.js Version
       - name: Check Node Version
-        run: node -v
+        run: |
+          node -v
+          npm -v
 
-      # Step 4: Install Google Chrome
       - name: Install Chrome
         run: choco install googlechrome -y
 
-      # Step 5: Verify Chrome Installation
       - name: Check Chrome Version
-        run: |
-          Get-Command "C:\Program Files\Google\Chrome\Application\chrome.exe" | Select-Object VersionInfo
-        shell: pwsh
+        run: google-chrome --version
 
-      # Step 6: Clone Backend Project
       - name: Clone Backend Project
-        run: |
-          git clone https://github.com/velevtzvetlin/express-mock-interview.git backend
-          if (Test-Path "backend") {
-            Write-Host "✅ Backend cloned successfully"
-          } else {
-            Write-Host "❌ Backend clone failed"
-            exit 1
-          }
+        run: git clone https://github.com/your-org/backend-repo.git backend
 
-      # Step 7: Clone Frontend Project
       - name: Clone Frontend Project
-        run: |
-          git clone https://github.com/velevtzvetlin/fe-test-task.git frontend
-          if (Test-Path "frontend") {
-            Write-Host "✅ Frontend cloned successfully"
-          } else {
-            Write-Host "❌ Frontend clone failed"
-            exit 1
-          }
+        run: git clone https://github.com/your-org/frontend-repo.git frontend
 
-      # Step 8: Install Backend Dependencies
       - name: Install Backend Dependencies
-        run: |
-          cd backend
-          npm ci
+        working-directory: ./backend
+        run: npm install
 
-      # Step 9: Start Backend Server
       - name: Start Backend Server
+        working-directory: ./backend
         run: |
-          cd backend
-          Start-Process -NoNewWindow -FilePath "npm" -ArgumentList "start"
+          echo "C:\Program Files\nodejs" | Out-File -Append -Encoding utf8 $env:GITHUB_PATH
+          npm start &
+        shell: bash
 
-      # Step 10: Install Frontend Dependencies
       - name: Install Frontend Dependencies
-        run: |
-          cd frontend
-          npm ci
+        working-directory: ./frontend
+        run: npm install
 
-      # Step 11: Start Frontend Server
       - name: Start Frontend Server
+        working-directory: ./frontend
         run: |
-          cd frontend
-          Start-Process -NoNewWindow -FilePath "npm" -ArgumentList "run dev"
+          echo "C:\Program Files\nodejs" | Out-File -Append -Encoding utf8 $env:GITHUB_PATH
+          npm start &
+        shell: bash
 
-      # Step 12: Wait for Servers to Start
       - name: Wait for Servers to Start
-        run: Start-Sleep -s 20
+        run: sleep 20s
 
-      # Step 13: Force Install `cypress-xpath`
-      - name: Force Install cypress-xpath
-        run: |
-          npm install cypress-xpath --legacy-peer-deps --force
+      - name: Force Install Cypress Dependencies
+        run: npm install cypress --save-dev
 
-      # Step 14: Install Cypress Dependencies
       - name: Install Cypress Dependencies
-        run: npm ci
+        run: npx cypress install
 
-      # Step 15: Run Cypress Tests in Chrome
       - name: Run Cypress Tests in Google Chrome
-        run: npx cypress run --browser chrome --headless
+        run: npx cypress run --browser chrome
+
+      - name: Post Checkout Cypress Tests
+        run: echo "Cypress tests completed."
+
+      - name: Complete job
+        run: echo "CI pipeline finished!"
