@@ -1,93 +1,89 @@
-name: CI Pipeline
+name: Run Cypress Tests with Allure
 
 on:
   push:
     branches:
       - main
+  pull_request:
 
 jobs:
   test:
-    runs-on: windows-2022
+    runs-on: windows-latest
 
     steps:
-      # Checkout the repository
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - name: Set up job
+        run: echo "Starting CI pipeline..."
+      
+      - name: Checkout Repository
+        uses: actions/checkout@v3
 
-      # Setup Node.js
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Install Node.js 22
+        uses: actions/setup-node@v3
         with:
           node-version: '22'
 
-      # Install dependencies in Backend
-      - name: Install backend dependencies
+      - name: Check Node.js and npm Version
         run: |
-          git clone https://github.com/velevtzvetlin/express-mock-interview.git backend
-          cd backend
-          npm ci
+          node -v
+          npm -v
 
-      # Install dependencies in Frontend
-      - name: Install frontend dependencies
-        run: |
-          git clone https://github.com/velevtzvetlin/fe-test-task.git frontend
-          cd frontend
-          npm ci
+      # ✅ Clone and Start Backend (express-mock-interview)
+      - name: Clone Backend Repository
+        run: git clone https://github.com/velevtzvetlin/express-mock-interview.git backend
 
-      # Run the backend server
-      - name: Start backend server
-        run: |
-          cd backend
-          npm start &
-        shell: pwsh
+      - name: Install Backend Dependencies
+        working-directory: ./backend
+        run: npm ci
 
-      # Run the frontend server
-      - name: Start frontend server
-        run: |
-          cd frontend
-          npm run dev &
-        shell: pwsh
+      - name: Start Backend Server
+        working-directory: ./backend
+        run: npm start &
+        shell: bash
 
-      # Sleep for 20 seconds to ensure the servers are up and running
-      - name: Wait for servers to start
-        run: Start-Sleep -Seconds 20
-        shell: pwsh
+      # ✅ Clone and Start Frontend (fe-test-task)
+      - name: Clone Frontend Repository
+        run: git clone https://github.com/velevtzvetlin/fe-test-task.git frontend
 
-      # Install Cypress and Allure dependencies
+      - name: Install Frontend Dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: Start Frontend Server
+        working-directory: ./frontend
+        run: npm run dev &
+        shell: bash
+
+      - name: Wait for Servers to Start
+        run: sleep 20s
+
+      # ✅ Install Cypress and Allure dependencies
       - name: Install Cypress and Allure dependencies
         run: |
           npm install -D @shelex/cypress-allure-plugin allure-commandline
           npx cypress install
-        shell: pwsh
 
-      # Run Cypress tests with Allure enabled
-      - name: Run Cypress Tests with Allure
+      # ✅ Run Cypress Tests with Allure
+      - name: Run Cypress Tests in Edge with Allure
         run: npx cypress run --browser edge --env allure=true,allureResults=allure-results
-        shell: pwsh
 
-      # Generate Allure report if results are available
+      # ✅ Generate Allure Report
       - name: Generate Allure Report
         run: |
           mkdir -p allure-results allure-report
-          if (Test-Path "allure-results" -and (Get-ChildItem "allure-results").Count -gt 0) {
+          if [ -d "allure-results" ] && [ "$(ls -A allure-results)" ]; then
             npx allure generate allure-results --clean -o allure-report
-          } else {
-            Write-Host "⚠️ Warning: No Allure results found! Skipping report generation."
+          else
+            echo "⚠️ Warning: No Allure results found! Skipping report generation."
             exit 0
-          }
-        shell: pwsh
+          fi
+        shell: bash
 
-      # Deploy Allure Report to GitHub Pages
+      # ✅ Deploy Allure Report to GitHub Pages
       - name: Deploy Allure Report to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./allure-report
 
-      # Trigger another workflow using GitHub API
-      - name: Trigger Allure Report Deployment Workflow
-        run: |
-          curl -X POST https://api.github.com/repos/${{ github.repository }}/actions/workflows/deploy-allure-report.yml/dispatches \
-          -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-          -d '{"ref":"main"}'
-        shell: pwsh
+      - name: Complete job
+        run: echo "CI pipeline finished!"
