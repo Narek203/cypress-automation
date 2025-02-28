@@ -81,9 +81,10 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./allure-report
 
-      # Trigger Allure Report Deployment Workflow
+      # Trigger another workflow (such as deployment)
       - name: Trigger Allure Report Deployment Workflow
-        uses: peter-evans/workflow-dispatch@v1
+        uses: octokit/request-action@v2
         with:
-          workflow: 'deploy-allure-report.yml'
-          ref: 'main'
+          route: POST /repos/${{ github.repository }}/actions/workflows/deploy-allure-report.yml/dispatches
+          ref: main
+          inputs: '{}'
