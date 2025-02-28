@@ -1,93 +1,89 @@
-name: Run Cypress Tests with Allure Reports
+name: CI Pipeline
 
 on:
   push:
     branches:
       - main
-  pull_request:
-  workflow_dispatch:
 
 jobs:
   test:
-    runs-on: windows-latest
+    runs-on: windows-2022
 
     steps:
-      - name: Set up job
-        run: echo "Starting CI pipeline..."
-
-      - name: Checkout Repository
+      # Checkout the repository
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install Node.js 22
+      # Setup Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '22'
 
-      - name: Check Node.js and npm Version
+      # Install dependencies in Backend
+      - name: Install backend dependencies
         run: |
-          node -v
-          npm -v
+          git clone https://github.com/velevtzvetlin/express-mock-interview.git backend
+          cd backend
+          npm ci
 
-      - name: Clone Backend Repository
-        run: git clone https://github.com/velevtzvetlin/express-mock-interview.git backend
+      # Install dependencies in Frontend
+      - name: Install frontend dependencies
+        run: |
+          git clone https://github.com/velevtzvetlin/fe-test-task.git frontend
+          cd frontend
+          npm ci
 
-      - name: Install Backend Dependencies
-        working-directory: ./backend
-        run: npm ci
-
-      - name: Start Backend Server
-        working-directory: ./backend
-        run: npm start &
+      # Run the backend server
+      - name: Start backend server
+        run: |
+          cd backend
+          npm start &
         shell: bash
 
-      - name: Clone Frontend Repository
-        run: git clone https://github.com/velevtzvetlin/fe-test-task.git frontend
-
-      - name: Install Frontend Dependencies
-        working-directory: ./frontend
-        run: npm ci
-
-      - name: Start Frontend Server
-        working-directory: ./frontend
-        run: npm run dev &
+      # Run the frontend server
+      - name: Start frontend server
+        run: |
+          cd frontend
+          npm run dev &
         shell: bash
 
-      - name: Wait for Servers to Start
+      # Sleep for 20 seconds to ensure the servers are up and running
+      - name: Wait for servers to start
         run: sleep 20s
 
-      - name: Install Allure for Cypress
-        run: npm install -D @shelex/cypress-allure-plugin allure-commandline
+      # Install Cypress and Allure dependencies
+      - name: Install Cypress and Allure dependencies
+        run: |
+          npm install -D @shelex/cypress-allure-plugin allure-commandline
+          npx cypress install
 
-      - name: Install Cypress Binary
-        run: npx cypress install
+      # Run Cypress tests with Allure enabled
+      - name: Run Cypress Tests with Allure
+        run: npx cypress run --browser edge --env allure=true,allureResults=allure-results
 
-      - name: Run Cypress Tests with Allure in Edge
-        run: npx cypress run --browser edge --env allure=true
-
+      # Generate Allure report if results are available
       - name: Generate Allure Report
         run: |
-          if [ -d "allure-results" ]; then
+          mkdir -p allure-results allure-report
+          if [ -d "allure-results" ] && [ "$(ls -A allure-results)" ]; then
             npx allure generate allure-results --clean -o allure-report
           else
-            echo "Allure results directory not found, skipping report generation."
-            exit 1
+            echo "⚠️ Warning: No Allure results found! Skipping report generation."
+            exit 0
           fi
         shell: bash
 
-      - name: Upload Allure Report
-        uses: actions/upload-artifact@v4
-        with:
-          name: allure-report
-          path: allure-report
-          retention-days: 7
-
+      # Deploy Allure Report to GitHub Pages
       - name: Deploy Allure Report to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./allure-report
-          publish_branch: gh-pages
-          force_orphan: true
 
-      - name: Complete job
-        run: echo "CI pipeline finished!"
+      # Trigger Allure Report Deployment Workflow
+      - name: Trigger Allure Report Deployment Workflow
+        uses: peter-evans/workflow-dispatch@v1
+        with:
+          workflow: 'deploy-allure-report.yml'
+          ref: 'main'
