@@ -27,26 +27,11 @@ jobs:
           node -v
           npm -v
 
-      - name: Install Google Chrome
-        run: choco install googlechrome -y
-
-      - name: Verify Google Chrome Installation
+      # ✅ Verify Microsoft Edge is Installed
+      - name: Check Microsoft Edge Version
         run: |
-          if (!(Test-Path "C:\Program Files\Google\Chrome\Application\chrome.exe")) {
-            Write-Error "Chrome not found!"
-            exit 1
-          }
-          Write-Output "Chrome installed successfully."
-
-      - name: Check Chrome Version
-        run: |
-          "C:\Program Files\Google\Chrome\Application\chrome.exe" --version
+          "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe" --version
         shell: cmd
-
-
-      - name: Add Chrome to PATH
-        run: |
-          echo "C:\Program Files\Google\Chrome\Application" | Out-File -Append -Encoding utf8 $env:GITHUB_PATH
 
       - name: Clone Backend Project
         run: git clone https://github.com/your-org/backend-repo.git backend
@@ -60,8 +45,7 @@ jobs:
 
       - name: Start Backend Server
         working-directory: ./backend
-        run: |
-          npm start &
+        run: npm start &
         shell: bash
 
       - name: Install Frontend Dependencies
@@ -70,8 +54,7 @@ jobs:
 
       - name: Start Frontend Server
         working-directory: ./frontend
-        run: |
-          npm start &
+        run: npm start &
         shell: bash
 
       - name: Wait for Servers to Start
@@ -80,11 +63,9 @@ jobs:
       - name: Install Cypress Dependencies
         run: npm install cypress --save-dev
 
-      - name: Run Cypress Tests in Google Chrome
-        run: npx cypress run --browser chrome
-
-      - name: Post Checkout Cypress Tests
-        run: echo "Cypress tests completed."
+      # ✅ Run Cypress Tests in Microsoft Edge
+      - name: Run Cypress Tests in Edge
+        run: npx cypress run --browser edge
 
       - name: Complete job
         run: echo "CI pipeline finished!"
