@@ -17,20 +17,30 @@ jobs:
       - name: Checkout Cypress Tests
         uses: actions/checkout@v3
 
-      # Step 2: Clone Backend Project (Using GitHub Token for Authentication)
+      # Step 2: Clone Backend Project (Using HTTPS)
       - name: Clone Backend Project
         run: |
-          git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/velevtzvetlin/express-mock-interview.git backend
-          ls -la backend || echo "⚠️ Backend repo not cloned!"
+          git clone https://github.com/velevtzvetlin/express-mock-interview.git backend
+          if [ -d "backend" ]; then
+            echo "✅ Backend cloned successfully"
+          else
+            echo "❌ Backend clone failed"
+            exit 1
+          fi
 
-      # Step 3: Clone Frontend Project (Using GitHub Token for Authentication)
+      # Step 3: Clone Frontend Project (Using HTTPS)
       - name: Clone Frontend Project
         run: |
-          git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/velevtzvetlin/fe-test-task.git frontend
-          ls -la frontend || echo "⚠️ Frontend repo not cloned!"
+          git clone https://github.com/velevtzvetlin/fe-test-task.git frontend
+          if [ -d "frontend" ]; then
+            echo "✅ Frontend cloned successfully"
+          else
+            echo "❌ Frontend clone failed"
+            exit 1
+          fi
 
-      # Step 4: Debugging - Verify Directory Structure
-      - name: Debugging - Check Directory Structure
+      # Step 4: Debugging - Check Directory Structure
+      - name: Debugging - List Root Directory
         run: ls -la
 
       # Step 5: Install Backend Dependencies
@@ -63,7 +73,7 @@ jobs:
 
       # Step 9: Wait for Servers to Start
       - name: Wait for Servers to Start
-        run: sleep 20 # Adjust this based on how long your FE/BE take to start
+        run: sleep 20 # Adjust this based on startup times
 
       # Step 10: Install Cypress Dependencies
       - name: Install Cypress Dependencies
