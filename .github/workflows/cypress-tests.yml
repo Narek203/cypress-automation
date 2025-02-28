@@ -1,0 +1,56 @@
+name: Run Cypress Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Cypress Tests
+        uses: actions/checkout@v3
+
+      - name: Clone Backend Project
+        run: git clone git@github.com:velevtzvetlin/express-mock-interview.git backend
+
+      - name: Install Backend Dependencies
+        run: |
+          cd backend
+          npm ci
+        working-directory: ./backend
+
+      - name: Start Backend Server
+        run: |
+          cd backend
+          npm start &
+        working-directory: ./backend
+
+      - name: Clone Frontend Project
+        run: git clone git@github.com:velevtzvetlin/fe-test-task.git frontend
+
+      - name: Install Frontend Dependencies
+        run: |
+          cd frontend
+          npm ci
+        working-directory: ./frontend
+
+      - name: Start Frontend Server
+        run: |
+          cd frontend
+          npm run dev &
+        working-directory: ./frontend
+
+      - name: Wait for Servers to Start
+        run: sleep 20 # Adjust if needed
+
+      - name: Install Cypress Dependencies
+        run: npm ci
+
+      - name: Run Cypress Tests
+        run: npx cypress run
