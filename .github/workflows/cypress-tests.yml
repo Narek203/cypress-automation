@@ -27,28 +27,30 @@ jobs:
           node -v
           npm -v
 
-      - name: Clone Backend Project
-        run: git clone https://github.com/your-org/backend-repo.git backend
-
-      - name: Clone Frontend Project
-        run: git clone https://github.com/your-org/frontend-repo.git frontend
+      # ✅ Clone and Start Backend (express-mock-interview)
+      - name: Clone Backend Repository
+        run: git clone https://github.com/velevtzvetlin/express-mock-interview.git backend
 
       - name: Install Backend Dependencies
         working-directory: ./backend
-        run: npm install
+        run: npm ci
 
       - name: Start Backend Server
         working-directory: ./backend
         run: npm start &
         shell: bash
 
+      # ✅ Clone and Start Frontend (fe-test-task)
+      - name: Clone Frontend Repository
+        run: git clone https://github.com/velevtzvetlin/fe-test-task.git frontend
+
       - name: Install Frontend Dependencies
         working-directory: ./frontend
-        run: npm install
+        run: npm ci
 
       - name: Start Frontend Server
         working-directory: ./frontend
-        run: npm start &
+        run: npm run dev &
         shell: bash
 
       - name: Wait for Servers to Start
@@ -57,7 +59,7 @@ jobs:
       - name: Install Cypress Dependencies
         run: npm install cypress --save-dev
 
-      # ✅ Run Cypress Tests in Edge (No Version Check Needed)
+      # ✅ Run Cypress Tests in Edge
       - name: Run Cypress Tests in Edge
         run: npx cypress run --browser edge
 
