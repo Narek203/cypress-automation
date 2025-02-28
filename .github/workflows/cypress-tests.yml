@@ -39,40 +39,43 @@ jobs:
         run: |
           cd backend
           npm start &
-        shell: bash
+        shell: pwsh
 
       # Run the frontend server
       - name: Start frontend server
         run: |
           cd frontend
           npm run dev &
-        shell: bash
+        shell: pwsh
 
       # Sleep for 20 seconds to ensure the servers are up and running
       - name: Wait for servers to start
-        run: sleep 20s
+        run: Start-Sleep -Seconds 20
+        shell: pwsh
 
       # Install Cypress and Allure dependencies
       - name: Install Cypress and Allure dependencies
         run: |
           npm install -D @shelex/cypress-allure-plugin allure-commandline
           npx cypress install
+        shell: pwsh
 
       # Run Cypress tests with Allure enabled
       - name: Run Cypress Tests with Allure
         run: npx cypress run --browser edge --env allure=true,allureResults=allure-results
+        shell: pwsh
 
       # Generate Allure report if results are available
       - name: Generate Allure Report
         run: |
           mkdir -p allure-results allure-report
-          if [ -d "allure-results" ] && [ "$(ls -A allure-results)" ]; then
+          if (Test-Path "allure-results" -and (Get-ChildItem "allure-results").Count -gt 0) {
             npx allure generate allure-results --clean -o allure-report
-          else
-            echo "⚠️ Warning: No Allure results found! Skipping report generation."
+          } else {
+            Write-Host "⚠️ Warning: No Allure results found! Skipping report generation."
             exit 0
-          fi
-        shell: bash
+          }
+        shell: pwsh
 
       # Deploy Allure Report to GitHub Pages
       - name: Deploy Allure Report to GitHub Pages
@@ -87,3 +90,4 @@ jobs:
           curl -X POST https://api.github.com/repos/${{ github.repository }}/actions/workflows/deploy-allure-report.yml/dispatches \
           -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
           -d '{"ref":"main"}'
+        shell: pwsh
