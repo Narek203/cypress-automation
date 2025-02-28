@@ -27,11 +27,6 @@ jobs:
           node -v
           npm -v
 
-      # ✅ Install Microsoft Edge
-      - name: Install Microsoft Edge
-        run: |
-          curl -sSL https://aka.ms/install-edge | bash
-
       # ✅ Clone and Start Backend (express-mock-interview)
       - name: Clone Backend Repository
         run: git clone https://github.com/velevtzvetlin/express-mock-interview.git backend
@@ -70,8 +65,7 @@ jobs:
       # ✅ Run Cypress Tests with Allure in Edge (headed mode for debugging)
       - name: Run Cypress Tests with Allure (headed mode)
         run: |
-          export CYPRESS_BROWSER=msedge
-          npx cypress run --browser $CYPRESS_BROWSER --headed --env allure=true,allureResults=allure-results
+          npx cypress run --browser msedge --headed --env allure=true,allureResults=allure-results
 
       # ✅ Generate Allure Report
       - name: Generate Allure Report
