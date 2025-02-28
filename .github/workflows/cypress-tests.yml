@@ -65,7 +65,7 @@ jobs:
       # ✅ Run Cypress Tests with Allure in Edge (headed mode for debugging)
       - name: Run Cypress Tests with Allure (headed mode)
         run: |
-          npx cypress run --browser msedge --headed --env allure=true,allureResults=allure-results
+          npx cypress run --browser edge --headed --env allure=true,allureResults=allure-results
 
       # ✅ Generate Allure Report
       - name: Generate Allure Report
