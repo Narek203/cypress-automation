@@ -56,8 +56,9 @@ jobs:
       - name: Wait for Servers to Start
         run: sleep 20s
 
-      - name: Install Cypress Dependencies
-        run: npm install cypress --save-dev
+      # ✅ Ensure Cypress Binary is Installed
+      - name: Install Cypress Binary
+        run: npx cypress install
 
       # ✅ Run Cypress Tests in Edge
       - name: Run Cypress Tests in Edge
