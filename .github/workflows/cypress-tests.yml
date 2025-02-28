@@ -17,7 +17,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Clone Backend Project
-        run: git clone git@github.com:velevtzvetlin/express-mock-interview.git backend
+        run: git clone https://github.com/velevtzvetlin/express-mock-interview.git backend
 
       - name: Install Backend Dependencies
         run: |
@@ -32,7 +32,7 @@ jobs:
         working-directory: ./backend
 
       - name: Clone Frontend Project
-        run: git clone git@github.com:velevtzvetlin/fe-test-task.git frontend
+        run: git clone https://github.com/velevtzvetlin/fe-test-task.git frontend
 
       - name: Install Frontend Dependencies
         run: |
