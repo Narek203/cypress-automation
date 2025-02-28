@@ -1,4 +1,4 @@
-name: Run Cypress Tests on Windows
+name: Run Cypress Tests on Windows (Chrome)
 
 on:
   push:
@@ -10,14 +10,32 @@ on:
 
 jobs:
   test:
-    runs-on: windows-latest  # Switch to Windows instead of Ubuntu
+    runs-on: windows-latest
 
     steps:
       # Step 1: Checkout Cypress Tests
       - name: Checkout Cypress Tests
         uses: actions/checkout@v3
 
-      # Step 2: Clone Backend Project (Using HTTPS)
+      # Step 2: Upgrade Node.js to v20
+      - name: Install Node.js 20
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20  # Upgrade to Node.js 20
+
+      # Step 3: Verify Node.js Version
+      - name: Check Node Version
+        run: node -v
+
+      # Step 4: Install Google Chrome
+      - name: Install Chrome
+        run: choco install googlechrome -y
+
+      # Step 5: Verify Chrome Installation
+      - name: Check Chrome Version
+        run: chrome --version
+
+      # Step 6: Clone Backend Project
       - name: Clone Backend Project
         run: |
           git clone https://github.com/velevtzvetlin/express-mock-interview.git backend
@@ -28,7 +46,7 @@ jobs:
             exit 1
           }
 
-      # Step 3: Clone Frontend Project (Using HTTPS)
+      # Step 7: Clone Frontend Project
       - name: Clone Frontend Project
         run: |
           git clone https://github.com/velevtzvetlin/fe-test-task.git frontend
@@ -39,47 +57,43 @@ jobs:
             exit 1
           }
 
-      # Step 4: Debugging - Check Directory Structure Before CD
-      - name: Verify Backend Directory Exists
-        run: |
-          Get-ChildItem
-          if (!(Test-Path "backend")) {
-            Write-Host "❌ Backend directory is missing!"
-            exit 1
-          }
-
-      # Step 5: Install Backend Dependencies
+      # Step 8: Install Backend Dependencies
       - name: Install Backend Dependencies
         run: |
           cd backend
           npm ci
 
-      # Step 6: Start Backend Server
+      # Step 9: Start Backend Server
       - name: Start Backend Server
         run: |
           cd backend
           Start-Process -NoNewWindow -FilePath "npm" -ArgumentList "start"
 
-      # Step 7: Install Frontend Dependencies
+      # Step 10: Install Frontend Dependencies
       - name: Install Frontend Dependencies
         run: |
           cd frontend
           npm ci
 
-      # Step 8: Start Frontend Server
+      # Step 11: Start Frontend Server
       - name: Start Frontend Server
         run: |
           cd frontend
           Start-Process -NoNewWindow -FilePath "npm" -ArgumentList "run dev"
 
-      # Step 9: Wait for Servers to Start
+      # Step 12: Wait for Servers to Start
       - name: Wait for Servers to Start
-        run: Start-Sleep -s 20  # Equivalent of sleep in PowerShell
+        run: Start-Sleep -s 20
 
-      # Step 10: Install Cypress Dependencies
+      # Step 13: Force Install `cypress-xpath`
+      - name: Force Install cypress-xpath
+        run: |
+          npm install cypress-xpath --legacy-peer-deps --force
+
+      # Step 14: Install Cypress Dependencies
       - name: Install Cypress Dependencies
         run: npm ci
 
-      # Step 11: Run Cypress Tests
-      - name: Run Cypress Tests
-        run: npx cypress run
+      # Step 15: Run Cypress Tests in Chrome
+      - name: Run Cypress Tests in Google Chrome
+        run: npx cypress run --browser chrome
