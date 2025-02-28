@@ -27,12 +27,6 @@ jobs:
           node -v
           npm -v
 
-      # ✅ Verify Microsoft Edge is Installed
-      - name: Check Microsoft Edge Version
-        run: |
-          "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe" --version
-        shell: cmd
-
       - name: Clone Backend Project
         run: git clone https://github.com/your-org/backend-repo.git backend
 
@@ -63,7 +57,7 @@ jobs:
       - name: Install Cypress Dependencies
         run: npm install cypress --save-dev
 
-      # ✅ Run Cypress Tests in Microsoft Edge
+      # ✅ Run Cypress Tests in Edge (No Version Check Needed)
       - name: Run Cypress Tests in Edge
         run: npx cypress run --browser edge
 
