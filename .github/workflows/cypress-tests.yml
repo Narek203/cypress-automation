@@ -14,7 +14,7 @@ jobs:
       - name: Set up job
         run: echo "Starting CI pipeline..."
 
-      - name: Checkout Cypress Tests
+      - name: Checkout Repository
         uses: actions/checkout@v3
 
       - name: Install Node.js 22
@@ -22,16 +22,28 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Check Node Version
+      - name: Check Node.js and npm Version
         run: |
           node -v
           npm -v
 
-      - name: Install Chrome
+      - name: Install Google Chrome
         run: choco install googlechrome -y
 
+      - name: Verify Google Chrome Installation
+        run: |
+          if (!(Test-Path "C:\Program Files\Google\Chrome\Application\chrome.exe")) {
+            Write-Error "Chrome not found!"
+            exit 1
+          }
+          Write-Output "Chrome installed successfully."
+
       - name: Check Chrome Version
-        run: google-chrome --version
+        run: "& 'C:\Program Files\Google\Chrome\Application\chrome.exe' --version"
+
+      - name: Add Chrome to PATH
+        run: |
+          echo "C:\Program Files\Google\Chrome\Application" | Out-File -Append -Encoding utf8 $env:GITHUB_PATH
 
       - name: Clone Backend Project
         run: git clone https://github.com/your-org/backend-repo.git backend
@@ -46,7 +58,6 @@ jobs:
       - name: Start Backend Server
         working-directory: ./backend
         run: |
-          echo "C:\Program Files\nodejs" | Out-File -Append -Encoding utf8 $env:GITHUB_PATH
           npm start &
         shell: bash
 
@@ -57,18 +68,14 @@ jobs:
       - name: Start Frontend Server
         working-directory: ./frontend
         run: |
-          echo "C:\Program Files\nodejs" | Out-File -Append -Encoding utf8 $env:GITHUB_PATH
           npm start &
         shell: bash
 
       - name: Wait for Servers to Start
         run: sleep 20s
 
-      - name: Force Install Cypress Dependencies
-        run: npm install cypress --save-dev
-
       - name: Install Cypress Dependencies
-        run: npx cypress install
+        run: npm install cypress --save-dev
 
       - name: Run Cypress Tests in Google Chrome
         run: npx cypress run --browser chrome
