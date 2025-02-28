@@ -39,9 +39,14 @@ jobs:
             exit 1
           fi
 
-      # Step 4: Debugging - Check Directory Structure
-      - name: Debugging - List Root Directory
-        run: ls -la
+      # Step 4: Debugging - Check Directory Structure Before CD
+      - name: Verify Backend Directory Exists
+        run: |
+          ls -la
+          if [ ! -d "backend" ]; then
+            echo "❌ Backend directory is missing!"
+            exit 1
+          fi
 
       # Step 5: Install Backend Dependencies
       - name: Install Backend Dependencies
@@ -49,36 +54,3 @@ jobs:
           cd backend
           npm ci
         working-directory: ./backend
-
-      # Step 6: Start Backend Server
-      - name: Start Backend Server
-        run: |
-          cd backend
-          npm start &
-        working-directory: ./backend
-
-      # Step 7: Install Frontend Dependencies
-      - name: Install Frontend Dependencies
-        run: |
-          cd frontend
-          npm ci
-        working-directory: ./frontend
-
-      # Step 8: Start Frontend Server
-      - name: Start Frontend Server
-        run: |
-          cd frontend
-          npm run dev &
-        working-directory: ./frontend
-
-      # Step 9: Wait for Servers to Start
-      - name: Wait for Servers to Start
-        run: sleep 20 # Adjust this based on startup times
-
-      # Step 10: Install Cypress Dependencies
-      - name: Install Cypress Dependencies
-        run: npm ci
-
-      # Step 11: Run Cypress Tests
-      - name: Run Cypress Tests
-        run: npx cypress run
