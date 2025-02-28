@@ -23,19 +23,17 @@ jobs:
         with:
           node-version: 20  # Upgrade to Node.js 20
 
-      # Step 3: Verify Node.js Version
-      - name: Check Node Version
-        run: node -v
-
-      # Step 4: Install Google Chrome
+      # Step 3: Install Google Chrome
       - name: Install Chrome
         run: choco install googlechrome -y
 
-      # Step 5: Verify Chrome Installation
+      # Step 4: Verify Chrome Installation (Windows-friendly)
       - name: Check Chrome Version
-        run: chrome --version
+        run: |
+          Get-Command "C:\Program Files\Google\Chrome\Application\chrome.exe" | Select-Object VersionInfo
+        shell: pwsh
 
-      # Step 6: Clone Backend Project
+      # Step 5: Clone Backend Project
       - name: Clone Backend Project
         run: |
           git clone https://github.com/velevtzvetlin/express-mock-interview.git backend
@@ -46,7 +44,7 @@ jobs:
             exit 1
           }
 
-      # Step 7: Clone Frontend Project
+      # Step 6: Clone Frontend Project
       - name: Clone Frontend Project
         run: |
           git clone https://github.com/velevtzvetlin/fe-test-task.git frontend
@@ -57,43 +55,43 @@ jobs:
             exit 1
           }
 
-      # Step 8: Install Backend Dependencies
+      # Step 7: Install Backend Dependencies
       - name: Install Backend Dependencies
         run: |
           cd backend
           npm ci
 
-      # Step 9: Start Backend Server
+      # Step 8: Start Backend Server
       - name: Start Backend Server
         run: |
           cd backend
           Start-Process -NoNewWindow -FilePath "npm" -ArgumentList "start"
 
-      # Step 10: Install Frontend Dependencies
+      # Step 9: Install Frontend Dependencies
       - name: Install Frontend Dependencies
         run: |
           cd frontend
           npm ci
 
-      # Step 11: Start Frontend Server
+      # Step 10: Start Frontend Server
       - name: Start Frontend Server
         run: |
           cd frontend
           Start-Process -NoNewWindow -FilePath "npm" -ArgumentList "run dev"
 
-      # Step 12: Wait for Servers to Start
+      # Step 11: Wait for Servers to Start
       - name: Wait for Servers to Start
         run: Start-Sleep -s 20
 
-      # Step 13: Force Install `cypress-xpath`
+      # Step 12: Force Install `cypress-xpath`
       - name: Force Install cypress-xpath
         run: |
           npm install cypress-xpath --legacy-peer-deps --force
 
-      # Step 14: Install Cypress Dependencies
+      # Step 13: Install Cypress Dependencies
       - name: Install Cypress Dependencies
         run: npm ci
 
-      # Step 15: Run Cypress Tests in Chrome
+      # Step 14: Run Cypress Tests in Chrome
       - name: Run Cypress Tests in Google Chrome
-        run: npx cypress run --browser chrome
+        run: npx cypress run --browser chrome --headless
