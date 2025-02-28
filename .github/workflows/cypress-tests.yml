@@ -39,7 +39,10 @@ jobs:
           Write-Output "Chrome installed successfully."
 
       - name: Check Chrome Version
-        run: "& 'C:\Program Files\Google\Chrome\Application\chrome.exe' --version"
+        run: |
+          "C:\Program Files\Google\Chrome\Application\chrome.exe" --version
+        shell: cmd
+
 
       - name: Add Chrome to PATH
         run: |
